@@ -1,0 +1,72 @@
+[
+  {
+    "name": "Pils",
+    "calories_per_100ml": 42,
+    "volume_ml": 330
+  },
+  {
+    "name": "Maisbier",
+    "calories_per_100ml": 42,
+    "volume_ml": 330
+  },
+  {
+    "name": "Witbier",
+    "calories_per_100ml": 45,
+    "volume_ml": 330
+  },
+  {
+    "name": "Weizenbier",
+    "calories_per_100ml": 47,
+    "volume_ml": 330
+  },
+  {
+    "name": "Kriek bier",
+    "calories_per_100ml": 49,
+    "volume_ml": 330
+  },
+  {
+    "name": "Geuze bier",
+    "calories_per_100ml": 50,
+    "volume_ml": 330
+  },
+  {
+    "name": "IPA",
+    "calories_per_100ml": 54,
+    "volume_ml": 330
+  },
+  {
+    "name": "Blond bier",
+    "calories_per_100ml": 58,
+    "volume_ml": 330
+  },
+  {
+    "name": "Lentebok",
+    "calories_per_100ml": 61,
+    "volume_ml": 330
+  },
+  {
+    "name": "Dubbel bier",
+    "calories_per_100ml": 61,
+    "volume_ml": 330
+  },
+  {
+    "name": "Herfstbok",
+    "calories_per_100ml": 62,
+    "volume_ml": 330
+  },
+  {
+    "name": "Tripel bier",
+    "calories_per_100ml": 66,
+    "volume_ml": 330
+  },
+  {
+    "name": "Quadrupel bier",
+    "calories_per_100ml": 83,
+    "volume_ml": 330
+  },
+  {
+    "name": "Custom",
+    "calories_per_100ml": null,
+    "volume_ml": 330
+  }
+]
