@@ -1,5 +1,5 @@
+import 'package:beerculator/widgets/entrypoint.dart';
 import 'package:flutter/material.dart';
-import 'screens/user_input_screen.dart';
 
 void main() {
   runApp(const BeerculatorApp());
@@ -13,8 +13,7 @@ class BeerculatorApp extends StatelessWidget {
     return MaterialApp(
       title: 'Beerculator',
       theme: ThemeData(useMaterial3: true),
-      home: const UserInputScreen(title: 'Beerculator User Input'),
+      home: const EntryPoint(),
     );
   }
 }
-

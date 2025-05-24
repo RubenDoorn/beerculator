@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'dart:convert';
 import 'beer_selection_screen.dart';
+import 'user_settings_screen.dart';
+
 
 class SportSelectionScreen extends StatefulWidget {
   final double weight;
@@ -82,7 +84,20 @@ class _SportSelectionScreenState extends State<SportSelectionScreen> {
       return const Center(child: CircularProgressIndicator());
     }
     return Scaffold(
-      appBar: AppBar(title: const Text('Beerculator Workout Selection')),
+      appBar: AppBar(
+        title: const Text('Beerculator Workout Selection'),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.settings),
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => const UserSettingsScreen()),
+              );
+            },
+          ),
+        ],
+      ),
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
