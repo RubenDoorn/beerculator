@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import 'dart:convert';
 import 'package:flutter/services.dart';
 
-
+/// This screen allows the user to select a predefined beer type,
+/// or input a custom beer (calories and volume), and returns the
+/// total calories per glass back to the previous screen.
 class BeerSelectionScreen extends StatefulWidget {
   const BeerSelectionScreen({super.key});
 
@@ -11,16 +13,16 @@ class BeerSelectionScreen extends StatefulWidget {
 }
 
 class _BeerSelectionScreenState extends State<BeerSelectionScreen> {
-  List<Map<String, dynamic>>? _beerData;
-  final _calorieController = TextEditingController();
-  final _volumeController = TextEditingController();
-  String? _selectedBeer;
-  String? _resultText;
+  List<Map<String, dynamic>>? _beerData;           // List of beer types loaded from JSON
+  final _calorieController = TextEditingController(); // Input for custom calories
+  final _volumeController = TextEditingController();  // Input for custom volume
+  String? _selectedBeer;                           // Name of the selected beer
+  String? _resultText;                             // Debug/output string (not currently shown)
 
   @override
   void initState() {
     super.initState();
-    loadBeerData();
+    loadBeerData();  // Load beer data from assets
   }
 
   @override
@@ -30,6 +32,7 @@ class _BeerSelectionScreenState extends State<BeerSelectionScreen> {
     super.dispose();
   }
 
+  /// Loads the beer JSON from assets and casts it to a usable structure
   Future<void> loadBeerData() async {
     final String jsonString = await rootBundle.loadString(
       'assets/beer_data.json',
@@ -45,12 +48,14 @@ class _BeerSelectionScreenState extends State<BeerSelectionScreen> {
     if (_beerData == null) {
       return const Center(child: CircularProgressIndicator());
     }
+
     return Scaffold(
       appBar: AppBar(title: const Text('Beerculator Beer Selection')),
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
+            // Dropdown to select beer type
             DropdownButtonFormField<String>(
               value: _selectedBeer,
               decoration: const InputDecoration(labelText: 'Select Beer'),
@@ -64,8 +69,10 @@ class _BeerSelectionScreenState extends State<BeerSelectionScreen> {
                 _selectedBeer = value;
               }),
             ),
+
+            // If custom beer is selected, show input fields for calories and volume
             if (_selectedBeer == 'Custom') ...[
-              SizedBox(height: 16),
+              const SizedBox(height: 16),
               TextFormField(
                 controller: _calorieController,
                 decoration: const InputDecoration(labelText: 'Calories'),
@@ -89,6 +96,8 @@ class _BeerSelectionScreenState extends State<BeerSelectionScreen> {
                 },
               ),
             ],
+
+            // Show beer details when one is selected (except 'Custom')
             if (_selectedBeer != 'Custom' && _selectedBeer != null)
               Padding(
                 padding: const EdgeInsets.all(8.0),
@@ -105,15 +114,16 @@ class _BeerSelectionScreenState extends State<BeerSelectionScreen> {
                   },
                 ),
               ),
+
             const SizedBox(height: 16),
+
+            // Submit the selected beer back to the previous screen
             ElevatedButton(
               onPressed: () {
                 setState(() {
                   if (_selectedBeer == 'Custom') {
-                    final calories =
-                        double.tryParse(_calorieController.text) ?? 0.0;
-                    final volume =
-                        double.tryParse(_volumeController.text) ?? 0.0;
+                    final calories = double.tryParse(_calorieController.text) ?? 0.0;
+                    final volume = double.tryParse(_volumeController.text) ?? 0.0;
                     _resultText = 'Custom Beer: $calories kcal, $volume ml';
                     final totalCalories = (calories / 100.0) * volume;
                     Navigator.pop(context, totalCalories);
@@ -121,9 +131,7 @@ class _BeerSelectionScreenState extends State<BeerSelectionScreen> {
                     final beer = _beerData!.firstWhere(
                       (b) => b['name'] == _selectedBeer,
                     );
-                    final totalCalories =
-                        (beer['calories_per_100ml'] / 100.0) *
-                        beer['volume_ml'];
+                    final totalCalories = (beer['calories_per_100ml'] / 100.0) * beer['volume_ml'];
                     _resultText =
                         '${beer['name']}: ${beer['calories_per_100ml']} kcal, ${beer['volume_ml']} ml';
                     Navigator.pop(context, {
