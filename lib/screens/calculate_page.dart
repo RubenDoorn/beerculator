@@ -218,6 +218,7 @@ class _SportSelectionScreenState extends State<CalculatePage> {
                       minutes: double.tryParse(_timeController.text) ?? 0.0,
                       calories: _lastCalories ?? 0.0,
                       beers: _lastBeers ?? 0.0,
+                      timestamp: DateTime.now(), 
                     );
 
                     ScaffoldMessenger.of(context).showSnackBar(

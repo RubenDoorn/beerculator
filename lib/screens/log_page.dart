@@ -6,6 +6,16 @@ class LogPage extends StatelessWidget {
   final List<WorkoutEntry> entries;
   const LogPage({super.key, required this.entries});
 
+String _fmt(DateTime ts) {
+  final dd = ts.day.toString().padLeft(2, '0');
+  final mm = ts.month.toString().padLeft(2, '0');
+  final yyyy = ts.year.toString();
+  final hh = ts.hour.toString().padLeft(2, '0');
+  final min = ts.minute.toString().padLeft(2, '0');
+  return "$dd-$mm-$yyyy $hh:$min"; // e.g., 13-09-2025 16:42
+}
+
+
   @override
   Widget build(BuildContext context) {
     if (entries.isEmpty) {
@@ -17,9 +27,12 @@ class LogPage extends StatelessWidget {
         final e = entries[i];
         return ListTile(
           title: Text(e.activity),
-          subtitle: Text("${e.minutes.toStringAsFixed(0)} min • "
-                         "${e.calories.toStringAsFixed(0)} kcal • "
-                         "${e.beers.toStringAsFixed(1)} beers"),
+          subtitle: Text(
+            "${_fmt(e.timestamp)}\t•\t"
+            "${e.minutes.round()} min\t•\t"
+            "${e.calories.round()} kcal\t•\t"
+            "${e.beers.toStringAsFixed(1)} 🍺\t•\t"
+          ),
         );
       },
     );

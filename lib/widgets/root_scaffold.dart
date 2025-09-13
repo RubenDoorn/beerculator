@@ -28,7 +28,12 @@ class _RootScaffoldState extends State<RootScaffold> {
 
   Future<void> _loadEntries() async {
     final loaded = await _store.load();
-    setState(() => _entries.addAll(loaded)); // keep newest-first behavior later if you want
+    loaded.sort((a, b) => b.timestamp.compareTo(a.timestamp)); // NEW
+    setState(() {
+      _entries
+        ..clear()
+        ..addAll(loaded);
+    });
   }
 
   // Keep this non-async so it matches void Function(WorkoutEntry)
@@ -58,10 +63,7 @@ class _RootScaffoldState extends State<RootScaffold> {
             icon: Icon(Icons.fitness_center),
             label: 'Calculate',
           ),
-          NavigationDestination(
-            icon: Icon(Icons.list_alt),
-            label: 'Log',
-          ),
+          NavigationDestination(icon: Icon(Icons.list_alt), label: 'Log'),
         ],
       ),
     );
