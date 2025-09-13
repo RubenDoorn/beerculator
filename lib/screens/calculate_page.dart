@@ -93,6 +93,17 @@ class _SportSelectionScreenState extends State<CalculatePage> {
     }
   }
 
+  void _resetAfterLog() {
+    _timeController.clear(); // clear minutes
+    FocusScope.of(context).unfocus(); // hide keyboard (nice UX)
+    setState(() {
+      _resultText = null; // hide result + log button
+      _lastCalories = null;
+      _lastBeers = null;
+      _selectedWorkout = null;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     if (_workoutData == null) {
@@ -217,7 +228,8 @@ class _SportSelectionScreenState extends State<CalculatePage> {
                       ),
                     );
 
-                  widget.onLog(entry);
+                    widget.onLog(entry);
+                    _resetAfterLog();
                   },
                   icon: const Icon(Icons.add),
                   label: const Text("Log this workout"),
