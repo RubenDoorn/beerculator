@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 
-import 'sport_selection_screen.dart';
 import '../widgets/user_profile_form.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import '../widgets/root_scaffold.dart';  // instead of calculate_page.dart
+
 
 /// The first screen the user sees (if no profile is saved).
 /// Displays a form to collect user data like age, weight, height, and gender.
@@ -42,19 +44,20 @@ class _UserInputScreenState extends State<UserInputScreen> {
           required String gender,
           required String weightUnit,
           required String heightUnit,
-        }) {
-          // After successful submission, navigate to the Sport Selection screen
-          // with weight and height passed as arguments.
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (_) => SportSelectionScreen(
-                weight: weight,
-                height: height,
-              ),
+        }) async{
+          final prefs = await SharedPreferences.getInstance();
+          await prefs.setString('age', age.toString());
+          await prefs.setString('weight', weight.toString());
+          await prefs.setString('height', height.toString());
+
+          if (!mounted) return;
+          Navigator.pushReplacement(context, MaterialPageRoute(
+            builder: (_) => RootScaffold(
+              weight: weight,
+              height: height,                // Handle logging the workout entry
             ),
-          );
-        },
+          ));
+        }
       ),
     );
   }
