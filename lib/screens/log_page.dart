@@ -14,7 +14,8 @@ class LogPage extends StatelessWidget {
 
   // Actions from RootScaffold
   final void Function(String name, double kcal) onChangeBeer;
-  final void Function(double kcal) onDrinkBeerKcal; // <-- drink current beer kcal
+  final void Function(double kcal)
+  onDrinkBeerKcal; // <-- drink current beer kcal
   final void Function(int index) onDeleteAt;
   final void Function(int index, WorkoutEntry e) onInsertAt;
 
@@ -40,13 +41,17 @@ class LogPage extends StatelessWidget {
   }
 
   String _messageForCredit(double beersCredit) {
-    if (beersCredit >= 6)   return "Legend! You’ve more than earned it 🍻";
-    if (beersCredit >= 3)   return "You go man — you deserve that beer!";
-    if (beersCredit >= 1)   return "Looking good — still in the green.";
-    if (beersCredit >= 0)   return "Even. Balanced the books.";
-    if (beersCredit >= -1)  return "Come on man… get some exercise.";
-    if (beersCredit >= -3)  return "Debt creeping up — time to sweat.";
-    return "Beer IOU is big — hustle time!";
+    if (beersCredit >= 10) return "Absolute hero, pint’s on you tonight 🍺";
+    if (beersCredit >= 7) return "Champion stuff, you’ve earned a proper round";
+    if (beersCredit >= 5) return "Brilliant effort, pint well deserved";
+    if (beersCredit >= 3) return "You’re doing grand, treat yourself";
+    if (beersCredit >= 1) return "Looking tidy, still in the green";
+    if (beersCredit == 0) return "All square, books are balanced";
+    if (beersCredit >= -1) return "Bit slack there, get the trainers on";
+    if (beersCredit >= -3) return "Debt’s creeping in, time for a jog";
+    if (beersCredit >= -5) return "Mate, you’re running on lager loans now";
+    if (beersCredit >= -7) return "Beer bank is empty, graft needed";
+    return "Massive pint debt, only sweat will save you now";
   }
 
   Future<void> _pickBeer(BuildContext context) async {
@@ -101,8 +106,10 @@ class LogPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final totalKcal = entries.fold<double>(0, (s, e) => s + e.calories);
-    final netKcal = totalKcal - consumedKcal;                 // kcal truth
-    final beersCredit = beerKcal > 0 ? netKcal / beerKcal : 0; // display in beers
+    final netKcal = totalKcal - consumedKcal; // kcal truth
+    final beersCredit = beerKcal > 0
+        ? netKcal / beerKcal
+        : 0; // display in beers
 
     return Column(
       children: [
@@ -121,10 +128,11 @@ class LogPage extends StatelessWidget {
                       Expanded(
                         child: Text(
                           "Beer credit: ${beersCredit.toStringAsFixed(1)}",
-                          style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                          style: Theme.of(context).textTheme.titleMedium
+                              ?.copyWith(
                                 color: beersCredit < 0
-                                  ? Colors.red
-                                  : (beersCredit > 0 ? Colors.green : null),
+                                    ? Colors.red
+                                    : (beersCredit > 0 ? Colors.green : null),
                               ),
                         ),
                       ),
@@ -137,18 +145,28 @@ class LogPage extends StatelessWidget {
                   const SizedBox(height: 8),
                   Row(
                     children: [
-                      Expanded(child: Text(_messageForCredit(beersCredit.toDouble()))),
+                      Expanded(
+                        child: Text(_messageForCredit(beersCredit.toDouble())),
+                      ),
                       ElevatedButton.icon(
                         onPressed: () {
                           if (beerKcal <= 0) {
                             ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(content: Text("Pick a valid beer first")),
+                              const SnackBar(
+                                content: Text("Pick a valid beer first"),
+                              ),
                             );
                             return;
                           }
-                          onDrinkBeerKcal(beerKcal); // subtracts current beer kcal
+                          onDrinkBeerKcal(
+                            beerKcal,
+                          ); // subtracts current beer kcal
                           ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(content: Text("Recorded: 1 $beerName (${beerKcal.round()} kcal)")),
+                            SnackBar(
+                              content: Text(
+                                "Recorded: 1 $beerName (${beerKcal.round()} kcal)",
+                              ),
+                            ),
                           );
                         },
                         icon: const Icon(Icons.remove_circle_outline),
@@ -170,8 +188,9 @@ class LogPage extends StatelessWidget {
                   itemCount: entries.length,
                   itemBuilder: (context, i) {
                     final e = entries[i];
-                    final beersForThisEntry =
-                        beerKcal > 0 ? e.calories / beerKcal : 0.0;
+                    final beersForThisEntry = beerKcal > 0
+                        ? e.calories / beerKcal
+                        : 0.0;
 
                     return ListTile(
                       title: Text(e.activity),
@@ -179,7 +198,7 @@ class LogPage extends StatelessWidget {
                         "${_fmt(e.timestamp)} • "
                         "${e.minutes.round()} min • "
                         "${e.calories.round()} kcal • "
-                        "${beersForThisEntry.toStringAsFixed(1)} 🍺"
+                        "${beersForThisEntry.toStringAsFixed(1)} 🍺",
                       ),
                       trailing: IconButton(
                         icon: const Icon(Icons.delete_outline),
@@ -198,7 +217,8 @@ class LogPage extends StatelessWidget {
                               content: Text("Deleted ${removed.activity}"),
                               action: SnackBarAction(
                                 label: 'UNDO',
-                                onPressed: () => onInsertAt(removedIndex, removed),
+                                onPressed: () =>
+                                    onInsertAt(removedIndex, removed),
                               ),
                             ),
                           );
