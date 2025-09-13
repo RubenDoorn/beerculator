@@ -28,10 +28,10 @@ String _fmt(DateTime ts) {
         return ListTile(
           title: Text(e.activity),
           subtitle: Text(
-            "${_fmt(e.timestamp)}\t•\t"
-            "${e.minutes.round()} min\t•\t"
-            "${e.calories.round()} kcal\t•\t"
-            "${e.beers.toStringAsFixed(1)} 🍺\t•\t"
+            "${_fmt(e.timestamp)} • "
+            "${e.minutes.round()} min • "
+            "${e.calories.round()} kcal • "
+            "${e.beers.toStringAsFixed(1)} 🍺 • "
           ),
         );
       },
