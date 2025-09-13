@@ -1,5 +1,8 @@
 import 'package:beerculator/widgets/entrypoint.dart'; // The conditional entry screen logic
 import 'package:flutter/material.dart';
+import 'screens/log_page.dart';
+import 'screens/calculate_page.dart';
+
 
 /// The main entry point of the Beerculator app.
 /// This sets up and runs the Flutter application.
@@ -22,3 +25,5 @@ class BeerculatorApp extends StatelessWidget {
     );
   }
 }
+
+

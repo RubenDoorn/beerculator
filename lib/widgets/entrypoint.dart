@@ -1,5 +1,6 @@
-import 'package:beerculator/screens/sport_selection_screen.dart';
+import 'package:beerculator/screens/calculate_page.dart';
 import 'package:beerculator/screens/user_input_screen.dart';
+import 'package:beerculator/widgets/root_scaffold.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -59,7 +60,7 @@ class _EntryPointState extends State<EntryPoint> {
 
     // Navigate to appropriate screen based on profile existence
     return _hasProfile
-        ? SportSelectionScreen(weight: _weight, height: _height)
-        : const UserInputScreen(title: 'Beerculator User Input');
+      ? RootScaffold(weight: _weight, height: _height)
+      : const UserInputScreen(title: 'Beerculator User Input');
   }
 }
