@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import 'sport_selection_screen.dart';
+import 'calculate_page.dart';
 import '../widgets/user_profile_form.dart';
 
 /// The first screen the user sees (if no profile is saved).
@@ -48,7 +48,7 @@ class _UserInputScreenState extends State<UserInputScreen> {
           Navigator.push(
             context,
             MaterialPageRoute(
-              builder: (_) => SportSelectionScreen(
+              builder: (_) => CalculatePage(
                 weight: weight,
                 height: height,
               ),
