@@ -31,8 +31,9 @@ class _RootScaffoldState extends State<RootScaffold> {
   final List<WorkoutEntry> _entries = [];
 
   // Single source of truth for beer selection
-  final ValueNotifier<BeerChoice> _beer =
-      ValueNotifier<BeerChoice>(const BeerChoice(name: 'Pils', kcalPerBeer: 150));
+  final ValueNotifier<BeerChoice> _beer = ValueNotifier<BeerChoice>(
+    const BeerChoice(name: 'Pils', kcalPerBeer: 150),
+  );
 
   @override
   void initState() {
@@ -51,6 +52,20 @@ class _RootScaffoldState extends State<RootScaffold> {
     });
   }
 
+  void _deleteAt(int index) {
+    setState(() {
+      _entries.removeAt(index);
+    });
+    _store.save(_entries);
+  }
+
+  void _insertAt(int index, WorkoutEntry e) {
+    setState(() {
+      _entries.insert(index, e);
+    });
+    _store.save(_entries);
+  }
+
   Future<void> _loadBeerChoice() async {
     final prefs = await SharedPreferences.getInstance();
     final name = prefs.getString('current_beer_name');
@@ -64,8 +79,10 @@ class _RootScaffoldState extends State<RootScaffold> {
     // Fallback to "Pils" from assets
     final jsonString = await rootBundle.loadString('assets/beer_data.json');
     final List<dynamic> parsed = jsonDecode(jsonString);
-    final beer = parsed.firstWhere((b) => b['name'] == 'Pils') as Map<String, dynamic>;
-    final perBeer = ((beer['calories_per_100ml'] as num) / 100.0) *
+    final beer =
+        parsed.firstWhere((b) => b['name'] == 'Pils') as Map<String, dynamic>;
+    final perBeer =
+        ((beer['calories_per_100ml'] as num) / 100.0) *
         (beer['volume_ml'] as num);
 
     _beer.value = BeerChoice(
@@ -83,9 +100,9 @@ class _RootScaffoldState extends State<RootScaffold> {
 
   void _setBeer(String name, double kcalPerBeer) {
     final next = BeerChoice(name: name, kcalPerBeer: kcalPerBeer);
-    _beer.value = next;           // notify listeners (both tabs)
-    _persistBeerChoice(next);     // persist
-    setState(() {});              // defensive rebuild for non-listeners
+    _beer.value = next; // notify listeners (both tabs)
+    _persistBeerChoice(next); // persist
+    setState(() {}); // defensive rebuild for non-listeners
   }
 
   void _addEntry(WorkoutEntry e) {
@@ -104,8 +121,6 @@ class _RootScaffoldState extends State<RootScaffold> {
             return IndexedStack(
               index: index,
               children: [
-                // NOTE: CalculatePage should accept these extra props:
-                //   beerName: String, beerKcal: double, onChangeBeer: (name, kcal) => void
                 CalculatePage(
                   weight: widget.weight,
                   height: widget.height,
@@ -119,6 +134,8 @@ class _RootScaffoldState extends State<RootScaffold> {
                   beerName: beer.name,
                   beerKcal: beer.kcalPerBeer,
                   onChangeBeer: _setBeer,
+                  onDeleteAt: _deleteAt,
+                  onInsertAt: _insertAt,
                 ),
               ],
             );
@@ -129,7 +146,10 @@ class _RootScaffoldState extends State<RootScaffold> {
         selectedIndex: index,
         onDestinationSelected: (i) => setState(() => index = i),
         destinations: const [
-          NavigationDestination(icon: Icon(Icons.fitness_center), label: 'Calculate'),
+          NavigationDestination(
+            icon: Icon(Icons.fitness_center),
+            label: 'Calculate',
+          ),
           NavigationDestination(icon: Icon(Icons.list_alt), label: 'Log'),
         ],
       ),

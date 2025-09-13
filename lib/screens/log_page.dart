@@ -7,6 +7,8 @@ class LogPage extends StatelessWidget {
   final String beerName;
   final double beerKcal;
   final void Function(String name, double kcal) onChangeBeer;
+  final void Function(int index) onDeleteAt;
+  final void Function(int index, WorkoutEntry e) onInsertAt;
 
   const LogPage({
     super.key,
@@ -14,6 +16,8 @@ class LogPage extends StatelessWidget {
     required this.beerName,
     required this.beerKcal,
     required this.onChangeBeer,
+    required this.onDeleteAt,
+    required this.onInsertAt,
   });
 
   String _fmt(DateTime ts) {
@@ -24,6 +28,30 @@ class LogPage extends StatelessWidget {
     final min = ts.minute.toString().padLeft(2, '0');
     return "$dd-$mm-$yyyy $hh:$min";
   }
+Future<bool> _confirmDelete(BuildContext context, WorkoutEntry e) async {
+  return await showDialog<bool>(
+        context: context,
+        barrierDismissible: false, // require an explicit choice
+        builder: (context) => AlertDialog(
+          title: const Text('Delete this workout?'),
+          content: Text(
+            '${e.activity} • ${e.minutes.round()} min • '
+            '${e.calories.round()} kcal • ${_fmt(e.timestamp)}',
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context, false),
+              child: const Text('Cancel'),
+            ),
+            TextButton(
+              onPressed: () => Navigator.pop(context, true),
+              child: const Text('Delete'),
+            ),
+          ],
+        ),
+      ) ??
+      false;
+}
 
   Future<void> _pickBeer(BuildContext context) async {
     final result = await Navigator.push(
@@ -91,10 +119,33 @@ class LogPage extends StatelessWidget {
                     return ListTile(
                       title: Text(e.activity),
                       subtitle: Text(
-                        "${_fmt(e.timestamp)}"
+                        "${_fmt(e.timestamp)} • "
                         "${e.minutes.round()} min • "
                         "${e.calories.round()} kcal • "
                         "${beers.toStringAsFixed(1)} 🍺 • ",
+                      ),
+                      trailing: IconButton(
+                        icon: const Icon(Icons.delete_outline),
+                        onPressed: () async {
+                          final removed = e;
+                          final removedIndex = i;
+                          
+                          final ok = await _confirmDelete(context, removed);
+                          if (!ok) return;
+                          onDeleteAt(i);
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text("Removed workout: ${removed.activity}"),
+                              action: SnackBarAction(
+                                label: "Undo",
+                                onPressed: () {
+                                  onInsertAt(removedIndex, removed);
+                                },
+                              ),
+                            ),
+                          );
+                        },
+                        tooltip: 'Remove',
                       ),
                     );
                   },
