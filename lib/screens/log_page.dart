@@ -4,9 +4,17 @@ import 'beer_selection_screen.dart';
 
 class LogPage extends StatelessWidget {
   final List<WorkoutEntry> entries;
+
+  // Current beer (from RootScaffold)
   final String beerName;
   final double beerKcal;
+
+  // Calories consumed across all beers (persisted in RootScaffold)
+  final double consumedKcal;
+
+  // Actions from RootScaffold
   final void Function(String name, double kcal) onChangeBeer;
+  final void Function(double kcal) onDrinkBeerKcal; // <-- drink current beer kcal
   final void Function(int index) onDeleteAt;
   final void Function(int index, WorkoutEntry e) onInsertAt;
 
@@ -15,6 +23,8 @@ class LogPage extends StatelessWidget {
     required this.entries,
     required this.beerName,
     required this.beerKcal,
+    required this.consumedKcal,
+    required this.onDrinkBeerKcal,
     required this.onChangeBeer,
     required this.onDeleteAt,
     required this.onInsertAt,
@@ -28,30 +38,16 @@ class LogPage extends StatelessWidget {
     final min = ts.minute.toString().padLeft(2, '0');
     return "$dd-$mm-$yyyy $hh:$min";
   }
-Future<bool> _confirmDelete(BuildContext context, WorkoutEntry e) async {
-  return await showDialog<bool>(
-        context: context,
-        barrierDismissible: false, // require an explicit choice
-        builder: (context) => AlertDialog(
-          title: const Text('Delete this workout?'),
-          content: Text(
-            '${e.activity} • ${e.minutes.round()} min • '
-            '${e.calories.round()} kcal • ${_fmt(e.timestamp)}',
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context, false),
-              child: const Text('Cancel'),
-            ),
-            TextButton(
-              onPressed: () => Navigator.pop(context, true),
-              child: const Text('Delete'),
-            ),
-          ],
-        ),
-      ) ??
-      false;
-}
+
+  String _messageForCredit(double beersCredit) {
+    if (beersCredit >= 6)   return "Legend! You’ve more than earned it 🍻";
+    if (beersCredit >= 3)   return "You go man — you deserve that beer!";
+    if (beersCredit >= 1)   return "Looking good — still in the green.";
+    if (beersCredit >= 0)   return "Even. Balanced the books.";
+    if (beersCredit >= -1)  return "Come on man… get some exercise.";
+    if (beersCredit >= -3)  return "Debt creeping up — time to sweat.";
+    return "Beer IOU is big — hustle time!";
+  }
 
   Future<void> _pickBeer(BuildContext context) async {
     final result = await Navigator.push(
@@ -77,37 +73,96 @@ Future<bool> _confirmDelete(BuildContext context, WorkoutEntry e) async {
     onChangeBeer(name, kcal);
   }
 
+  Future<bool> _confirmDelete(BuildContext context, WorkoutEntry e) async {
+    return await showDialog<bool>(
+          context: context,
+          barrierDismissible: false,
+          builder: (context) => AlertDialog(
+            title: const Text('Delete this workout?'),
+            content: Text(
+              '${e.activity} • ${e.minutes.round()} min • '
+              '${e.calories.round()} kcal • ${_fmt(e.timestamp)}',
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context, false),
+                child: const Text('Cancel'),
+              ),
+              TextButton(
+                onPressed: () => Navigator.pop(context, true),
+                child: const Text('Delete'),
+              ),
+            ],
+          ),
+        ) ??
+        false;
+  }
+
   @override
   Widget build(BuildContext context) {
     final totalKcal = entries.fold<double>(0, (s, e) => s + e.calories);
-    final beerCredit = beerKcal > 0 ? totalKcal / beerKcal : 0.0;
+    final netKcal = totalKcal - consumedKcal;                 // kcal truth
+    final beersCredit = beerKcal > 0 ? netKcal / beerKcal : 0; // display in beers
 
     return Column(
       children: [
+        // Header: beer credit + change beer + drink-a-beer (subtract kcal)
         Padding(
           padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
           child: Card(
             child: Padding(
               padding: const EdgeInsets.all(16),
-              child: Row(
+              child: Column(
                 children: [
-                  const Icon(Icons.local_drink),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: Text(
-                      "Beer credit: ${beerCredit.toStringAsFixed(1)}",
-                      style: Theme.of(context).textTheme.titleMedium,
-                    ),
+                  Row(
+                    children: [
+                      const Icon(Icons.local_drink),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Text(
+                          "Beer credit: ${beersCredit.toStringAsFixed(1)}",
+                          style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                                color: beersCredit < 0
+                                  ? Colors.red
+                                  : (beersCredit > 0 ? Colors.green : null),
+                              ),
+                        ),
+                      ),
+                      TextButton(
+                        onPressed: () => _pickBeer(context),
+                        child: Text(beerName),
+                      ),
+                    ],
                   ),
-                  TextButton(
-                    onPressed: () => _pickBeer(context),
-                    child: Text(beerName),
+                  const SizedBox(height: 8),
+                  Row(
+                    children: [
+                      Expanded(child: Text(_messageForCredit(beersCredit.toDouble()))),
+                      ElevatedButton.icon(
+                        onPressed: () {
+                          if (beerKcal <= 0) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(content: Text("Pick a valid beer first")),
+                            );
+                            return;
+                          }
+                          onDrinkBeerKcal(beerKcal); // subtracts current beer kcal
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(content: Text("Recorded: 1 $beerName (${beerKcal.round()} kcal)")),
+                          );
+                        },
+                        icon: const Icon(Icons.remove_circle_outline),
+                        label: const Text("I drank a beer"),
+                      ),
+                    ],
                   ),
                 ],
               ),
             ),
           ),
         ),
+
+        // Entries list
         Expanded(
           child: entries.isEmpty
               ? const Center(child: Text("No workouts logged yet"))
@@ -115,37 +170,39 @@ Future<bool> _confirmDelete(BuildContext context, WorkoutEntry e) async {
                   itemCount: entries.length,
                   itemBuilder: (context, i) {
                     final e = entries[i];
-                    final beers = beerKcal > 0 ? e.calories / beerKcal : 0.0;
+                    final beersForThisEntry =
+                        beerKcal > 0 ? e.calories / beerKcal : 0.0;
+
                     return ListTile(
                       title: Text(e.activity),
                       subtitle: Text(
                         "${_fmt(e.timestamp)} • "
                         "${e.minutes.round()} min • "
                         "${e.calories.round()} kcal • "
-                        "${beers.toStringAsFixed(1)} 🍺 • ",
+                        "${beersForThisEntry.toStringAsFixed(1)} 🍺"
                       ),
                       trailing: IconButton(
                         icon: const Icon(Icons.delete_outline),
+                        tooltip: 'Remove',
                         onPressed: () async {
+                          final ok = await _confirmDelete(context, e);
+                          if (!ok) return;
+
                           final removed = e;
                           final removedIndex = i;
-                          
-                          final ok = await _confirmDelete(context, removed);
-                          if (!ok) return;
-                          onDeleteAt(i);
+
+                          onDeleteAt(removedIndex);
+
                           ScaffoldMessenger.of(context).showSnackBar(
                             SnackBar(
-                              content: Text("Removed workout: ${removed.activity}"),
+                              content: Text("Deleted ${removed.activity}"),
                               action: SnackBarAction(
-                                label: "Undo",
-                                onPressed: () {
-                                  onInsertAt(removedIndex, removed);
-                                },
+                                label: 'UNDO',
+                                onPressed: () => onInsertAt(removedIndex, removed),
                               ),
                             ),
                           );
                         },
-                        tooltip: 'Remove',
                       ),
                     );
                   },

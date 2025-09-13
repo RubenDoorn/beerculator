@@ -26,7 +26,8 @@ class RootScaffold extends StatefulWidget {
 
 class _RootScaffoldState extends State<RootScaffold> {
   int index = 0;
-
+  static const _kConsumedKcalKey = 'kcal_consumed_v1';
+  double _kcalConsumed = 0.0; // total kcal you've drunk (all beers)
   final _store = WorkoutLogStore();
   final List<WorkoutEntry> _entries = [];
 
@@ -40,6 +41,7 @@ class _RootScaffoldState extends State<RootScaffold> {
     super.initState();
     _loadBeerChoice();
     _loadEntries();
+    _loadConsumedKcal();
   }
 
   Future<void> _loadEntries() async {
@@ -50,6 +52,22 @@ class _RootScaffoldState extends State<RootScaffold> {
         ..clear()
         ..addAll(loaded);
     });
+  }
+
+  Future<void> _loadConsumedKcal() async {
+    final prefs = await SharedPreferences.getInstance();
+    setState(() => _kcalConsumed = prefs.getDouble(_kConsumedKcalKey) ?? 0.0);
+  }
+
+  Future<void> _saveConsumedKcal() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setDouble(_kConsumedKcalKey, _kcalConsumed);
+  }
+
+  // Call this when user presses "I drank a beer"
+  void _drinkBeerKcal(double kcal) {
+    setState(() => _kcalConsumed += (kcal > 0 ? kcal : 0.0));
+    _saveConsumedKcal();
   }
 
   void _deleteAt(int index) {
@@ -133,6 +151,8 @@ class _RootScaffoldState extends State<RootScaffold> {
                   entries: _entries,
                   beerName: beer.name,
                   beerKcal: beer.kcalPerBeer,
+                  consumedKcal: _kcalConsumed, // NEW
+                  onDrinkBeerKcal: _drinkBeerKcal, // NEW
                   onChangeBeer: _setBeer,
                   onDeleteAt: _deleteAt,
                   onInsertAt: _insertAt,
