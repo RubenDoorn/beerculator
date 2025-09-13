@@ -1,3 +1,4 @@
+import 'package:beerculator/models/workout_entry.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'dart:convert';
@@ -11,11 +12,7 @@ class CalculatePage extends StatefulWidget {
   final double weight;
   final double height;
 
-  const CalculatePage({
-    super.key,
-    required this.weight,
-    required this.height,
-  });
+  const CalculatePage({super.key, required this.weight, required this.height});
 
   @override
   State<CalculatePage> createState() => _SportSelectionScreenState();
@@ -25,15 +22,18 @@ class _SportSelectionScreenState extends State<CalculatePage> {
   Map<String, dynamic>? _workoutData;
   String? _selectedWorkout;
   String? _resultText;
-  double? _caloriesPerBeer;         // Total calories in selected beer
-  String? _selectedBeerName;        // Name of the selected beer
+  double? _caloriesPerBeer; // Total calories in selected beer
+  String? _selectedBeerName; // Name of the selected beer
+  double? _lastCalories;
+  double? _lastBeers;
+
   final _timeController = TextEditingController();
 
   @override
   void initState() {
     super.initState();
-    loadDefaultBeer();   // Loads 'Pils' as default beer on screen init
-    loadWorkoutData();   // Loads the sports data from JSON
+    loadDefaultBeer(); // Loads 'Pils' as default beer on screen init
+    loadWorkoutData(); // Loads the sports data from JSON
   }
 
   @override
@@ -59,7 +59,8 @@ class _SportSelectionScreenState extends State<CalculatePage> {
     final beer = parsed.firstWhere((b) => b['name'] == 'Pils');
 
     setState(() {
-      _caloriesPerBeer = (beer['calories_per_100ml'] / 100.0) * beer['volume_ml'];
+      _caloriesPerBeer =
+          (beer['calories_per_100ml'] / 100.0) * beer['volume_ml'];
       _selectedBeerName = beer['name'];
     });
   }
@@ -78,6 +79,8 @@ class _SportSelectionScreenState extends State<CalculatePage> {
       final beers = calories / _caloriesPerBeer!;
 
       setState(() {
+        _lastCalories = calories;
+        _lastBeers = beers;
         _resultText =
             'You burned ${calories.toStringAsFixed(0)} kcal = ${beers.toStringAsFixed(1)} beers ($_selectedBeerName)';
       });
@@ -115,8 +118,10 @@ class _SportSelectionScreenState extends State<CalculatePage> {
               value: _selectedWorkout,
               decoration: const InputDecoration(labelText: 'Select Workout'),
               items: _workoutData?.keys
-                  .map((workout) =>
-                      DropdownMenuItem(value: workout, child: Text(workout)))
+                  .map(
+                    (workout) =>
+                        DropdownMenuItem(value: workout, child: Text(workout)),
+                  )
                   .toList(),
               onChanged: (value) => setState(() {
                 _selectedWorkout = value;
@@ -185,6 +190,33 @@ class _SportSelectionScreenState extends State<CalculatePage> {
               },
               child: const Text('Change type of beer'),
             ),
+            const SizedBox(height: 42),
+            if (_resultText != null)
+              Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: ElevatedButton.icon(
+                  onPressed: () {
+                    final entry = WorkoutEntry(
+                      activity: _selectedWorkout ?? 'Unknown',
+                      minutes: double.tryParse(_timeController.text) ?? 0.0,
+                      calories: _lastCalories ?? 0.0,
+                      beers: _lastBeers ?? 0.0,
+                    );
+
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text(
+                          "Workout logged: ${entry.activity}, ${entry.calories.toStringAsFixed(0)} kcal",
+                        ),
+                      ),
+                    );
+
+                    // TODO: actually send this entry to LogPage
+                  },
+                  icon: const Icon(Icons.add),
+                  label: const Text("Log this workout"),
+                ),
+              ),
           ],
         ),
       ),
