@@ -17,9 +17,20 @@ dev_dependencies:
   flutter_test:
     sdk: flutter
   flutter_lints: ^5.0.0
+  flutter_launcher_icons: ^0.14.4
 
 flutter:
   uses-material-design: true
   assets:
     - assets/exercise_data.json
     - assets/beer_data.json
+flutter_launcher_icons:
+  image_path: assets/app_icon.png   # used for Android/iOS
+  android: true
+  ios: false                        # set to true later if you build for iOS
+  web:
+    generate: true
+    image_path: assets/app_icon.png
+    background_color: "#033E26"     # pick something that fits your logo
+    theme_color: "#F7BB2F"
+  min_sdk_android: 21
