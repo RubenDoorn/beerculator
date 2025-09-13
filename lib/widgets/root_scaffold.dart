@@ -1,6 +1,7 @@
 import 'package:beerculator/screens/calculate_page.dart';
 import 'package:beerculator/screens/log_page.dart';
 import 'package:flutter/material.dart';
+import 'package:beerculator/models/workout_entry.dart';
 
 class RootScaffold extends StatefulWidget {
   final double weight;
@@ -13,12 +14,21 @@ class RootScaffold extends StatefulWidget {
 
 class _RootScaffoldState extends State<RootScaffold> {
   int index = 0;
+  final List<WorkoutEntry> _entries = [];
+
+  void _addEntry(WorkoutEntry e) {
+    setState(() => _entries.insert(0, e)); // newest first
+  }
 
   @override
   Widget build(BuildContext context) {
     final pages = [
-      CalculatePage(weight: widget.weight, height: widget.height),
-      const LogPage(),
+      CalculatePage(
+        weight: widget.weight,
+        height: widget.height,
+        onLog: _addEntry,
+      ),
+      LogPage(entries: _entries),
     ];
 
     return Scaffold(
@@ -28,7 +38,9 @@ class _RootScaffoldState extends State<RootScaffold> {
         onDestinationSelected: (i) => setState(() => index = i),
         destinations: const [
           NavigationDestination(
-              icon: Icon(Icons.fitness_center), label: 'Calculate'),
+            icon: Icon(Icons.fitness_center),
+            label: 'Calculate',
+          ),
           NavigationDestination(icon: Icon(Icons.list_alt), label: 'Log'),
         ],
       ),

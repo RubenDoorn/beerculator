@@ -11,8 +11,14 @@ import 'user_settings_screen.dart';
 class CalculatePage extends StatefulWidget {
   final double weight;
   final double height;
+  final void Function(WorkoutEntry) onLog;
 
-  const CalculatePage({super.key, required this.weight, required this.height});
+  const CalculatePage({
+    super.key,
+    required this.weight,
+    required this.height,
+    required this.onLog,
+  });
 
   @override
   State<CalculatePage> createState() => _SportSelectionScreenState();
@@ -211,7 +217,7 @@ class _SportSelectionScreenState extends State<CalculatePage> {
                       ),
                     );
 
-                    // TODO: actually send this entry to LogPage
+                  widget.onLog(entry);
                   },
                   icon: const Icon(Icons.add),
                   label: const Text("Log this workout"),
